@@ -1,6 +1,8 @@
 package tw.kigi.kava.data;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 import tw.kigi.kava.data.annotation.Column;
 import tw.kigi.kava.data.annotation.Id;
@@ -13,58 +15,146 @@ public final class Property {
 
 	private String schemaName;
 	private String name;
+	private String aliasName;
+	private String propertyName;
 	
 	private String tableName;
 	private String columnName;
 	
-	private boolean expr = false;
+	private boolean expr;
 	
-	private String defaultValue;
-	private boolean nullAble = false;
+	private boolean nullAble;
 	
-	private boolean primary = false;
+	private boolean primary;
+	private boolean autoIncrement;
+	private String sequence;
 	
-	private Operator op;
+	private Operator<?> operator;
+	private Object defaultValue;
 	
-	String toColumn(String column_name, String property_name) {
-		return "".equals(column_name) 
-				? Convention.toColumnName(property_name)
-				: column_name;
-	}
+	private Method setter;
+	private Method getter;
 	
 	protected Property(Class<?> clazz, String schema_name, String table_name, 
-					   Field field) throws UnsupportedTypeException {
+					   Field field) throws UnsupportedTypeException, NoSuchMethodException, SecurityException {
 		
 		schemaName = schema_name;
 		name = field.getName();
+		String tmp = Convention.capitalize(name);
+		aliasName = new StringBuilder(schema_name)
+						.append('_')
+						.append(tmp).toString();
+		
+		propertyName = new StringBuilder(schema_name)
+						.append('.')
+						.append(tmp).toString();
 		
 		tableName = table_name;
-		op = OpUtils.getOperator(field.getType());
+		operator = OpUtils.getOperator(field.getType());
+		
+		setter = clazz.getMethod("set" + tmp, field.getType());
+		getter = clazz.getMethod(
+					(Boolean.class.equals(field.getType()) ? "is" : "get") + tmp);
 	}
 	
 	public Property(Class<?> clazz, String schema_name, String table_name, 
-					Field field, Column column) throws UnsupportedTypeException {
+					Field field, Column column) throws UnsupportedTypeException, NoSuchMethodException, SecurityException {
 		
 		this(clazz, schema_name, table_name, field);
-		columnName = toColumn(column.name(), name);
-		defaultValue = column.defaultValue();
+		columnName = new StringBuilder(schema_name)
+						.append('.')
+						.append(Convention.toColumn(column.name(), name)).toString();
+		
+		defaultValue = operator.parseValue(column.defaultValue());
 		nullAble = column.nullAble();
+		expr = false;
+		primary = false;
+		autoIncrement = false;
 	}
 	
 	public Property(Class<?> clazz, String schema_name, String table_name, 
-					Field field, Id id) throws UnsupportedTypeException {
+					Field field, Id id) throws UnsupportedTypeException, NoSuchMethodException, SecurityException {
 		
 		this(clazz, schema_name, table_name, field);
-		columnName = toColumn(id.name(), name);
+		columnName = new StringBuilder(schema_name)
+						.append('.')
+						.append(Convention.toColumn(id.name(), name)).toString();
+		
 		nullAble = false;
+		expr = false;
 		primary = true;
+		autoIncrement = id.autoIncrement();
+		sequence = id.sequence();
 	}
 	
 	public Property(Class<?> clazz, String schema_name, String table_name, 
 					Field field, Expression expression) 
-							throws UnsupportedTypeException {
+							throws UnsupportedTypeException, NoSuchMethodException, SecurityException {
 		
 		this(clazz, schema_name, table_name, field);
+		nullAble = true;
 		expr = true;
+		primary = false;
+		autoIncrement = false;
+	}
+	
+	public Object get(Object data) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+		return getter.invoke(data);
+	}
+	
+	public void set(Object data, Object value) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+		setter.invoke(data, value);
+	}
+
+	public String getSchemaName() {
+		return schemaName;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public String getAliasName() {
+		return aliasName;
+	}
+
+	public String getPropertyName() {
+		return propertyName;
+	}
+
+	public String getTableName() {
+		return tableName;
+	}
+
+	public String getColumnName() {
+		return columnName;
+	}
+
+	public boolean isExpr() {
+		return expr;
+	}
+
+	public boolean isNullAble() {
+		return nullAble;
+	}
+
+	public boolean isPrimary() {
+		return primary;
+	}
+
+	public boolean isAutoIncrement() {
+		return autoIncrement;
+	}
+
+	public String getSequence() {
+		return sequence;
+	}
+
+	public Operator<?> getOperator() {
+		return operator;
+	}
+
+	public Object getDefaultValue() {
+		return defaultValue;
 	}
 }

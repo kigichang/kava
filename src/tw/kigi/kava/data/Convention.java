@@ -83,4 +83,10 @@ public class Convention {
 		
 		return ret.toString();
 	}
+	
+	public static String toColumn(String column_name, String property_name) {
+		return column_name == null || "".equals(column_name = column_name.trim()) 
+				? Convention.toColumnName(property_name)
+				: column_name;
+	}
 }
