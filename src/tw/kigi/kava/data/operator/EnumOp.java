@@ -48,6 +48,11 @@ public class EnumOp<T, E extends Enum<?> & EnumType<T>> implements Operator<E> {
 	
 	@Override
 	public E parseValue(String value) throws ParseValueException {
+		for (E e : clazz.getEnumConstants()) {
+			if (e.name().equals(value)) {
+				return e;
+			}
+		}
 		
 		return toEnum(op.parseValue(value));
 	}
