@@ -51,7 +51,8 @@ public class DoubleOp implements Operator<Double> {
 	@Override
 	public Double getResult(ResultSet result, String label) throws SQLException {
 		
-		return result.getDouble(label);
+		double ret = result.getDouble(label);
+		return result.wasNull() ? null : ret;
 	}
 
 }

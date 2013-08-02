@@ -49,7 +49,9 @@ public class LongOp implements Operator<Long> {
 
 	@Override
 	public Long getResult(ResultSet result, String label) throws SQLException {
-		return result.getLong(label);
+		
+	  long ret = result.getLong(label);
+	  return result.wasNull() ? null : ret;
 	}
 
 	

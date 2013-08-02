@@ -51,8 +51,9 @@ public class IntegerOp implements Operator<Integer> {
 	@Override
 	public Integer getResult(ResultSet result, String label)
 			throws SQLException {
-		
-		return result.getInt(label);
+	  
+	  int ret = result.getInt(label);
+	  return result.wasNull() ? null : ret; 
 	}
 
 }

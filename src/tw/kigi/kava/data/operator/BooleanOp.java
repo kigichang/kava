@@ -53,7 +53,8 @@ public class BooleanOp implements Operator<Boolean> {
 	public Boolean getResult(ResultSet result, String label)
 			throws SQLException {
 		
-		return result.getBoolean(label);
+		boolean ret = result.getBoolean(label);
+		return result.wasNull() ? null : ret;
 	}
 
 }

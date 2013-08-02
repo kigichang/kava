@@ -51,7 +51,9 @@ public class ShortOp implements Operator<Short> {
 
 	@Override
 	public Short getResult(ResultSet result, String label) throws SQLException {
-		return result.getShort(label);
+		short ret = result.getShort(label);
+		return result.wasNull() ? null : ret;
+		
 	}
 
 }

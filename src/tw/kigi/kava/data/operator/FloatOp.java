@@ -50,7 +50,8 @@ public class FloatOp implements Operator<Float> {
 	@Override
 	public Float getResult(ResultSet result, String label) throws SQLException {
 
-		return result.getFloat(label);
+		float ret = result.getFloat(label);
+		return result.wasNull() ? null : ret;
 	}
 
 }
