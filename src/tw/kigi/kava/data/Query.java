@@ -10,6 +10,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
+
 import tw.kigi.kava.data.exception.UnsupportedTypeException;
 import tw.kigi.kava.data.operator.OpUtils;
 import tw.kigi.kava.data.operator.Operator;
@@ -37,7 +39,7 @@ public abstract class Query<T> {
 		return this;
 	}
 	
-	public Query<T> values(ParamValue...objects) {
+	public Query<T> values(ParamValue<?>...objects) {
 		this.values = objects;
 		return this;
 	}
@@ -80,9 +82,17 @@ public abstract class Query<T> {
 		return ret.toString();
 	}
 	
-	protected String whereExpr() {
-		// TODO where expression string
-		return null;
+	protected String whereExpr() throws SQLException {
+		
+		String[] fields = schema.getFields();
+		String tmp = condition;
+		for(String f : fields) {
+			if (tmp.indexOf(f) >= 0) {
+				Property p = schema.getProperty(f);
+				tmp = StringUtils.replace(tmp, f, p.getColumnName());
+			}
+		}
+		return tmp;
 	}
 	
 	protected String groupExpr() {
@@ -137,7 +147,7 @@ public abstract class Query<T> {
 			DBUtils.close(stmt);
 		}
 		
-		return ret.toArray((T[])Array.newInstance(clazz, ret.size()));
+		return (T[])(ret.toArray());
 		
 	}
 	

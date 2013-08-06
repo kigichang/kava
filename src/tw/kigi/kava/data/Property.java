@@ -135,6 +135,10 @@ public final class Property {
 	public String getColumnName() {
 		return columnName;
 	}
+	
+	public String getColumn() {
+		return column;
+	}
 
 	public boolean isExpr() {
 		return expr;
