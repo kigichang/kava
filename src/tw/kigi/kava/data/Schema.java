@@ -15,6 +15,34 @@ import tw.kigi.kava.data.exception.UnsupportedTypeException;
 
 public final class Schema {
 
+	private static HashMap<String, Schema> schemas = new HashMap<String, Schema>();
+	
+	public static Schema getSchea(String name) throws SQLException {
+		if (schemas.containsKey(name)) {
+			return schemas.get(name);
+		}
+		
+		throw new SQLException("Schema Not Found " + name);
+	}
+	
+	public static Schema getSchema(Class<?> clazz) throws SQLException {
+		String name = clazz.getSimpleName();
+		
+		if (schemas.containsKey(name)) {
+			return schemas.get(name);
+		}
+		
+		Schema ret;
+		try {
+			ret = new Schema(clazz, name);
+		} catch (NoSuchMethodException | SecurityException
+				| UnsupportedTypeException e) {
+			throw new SQLException(e);
+		}
+		
+		return ret;
+	}
+	
 	private Class<?> clazz;
 	private String schemaName;
 	private String tableName;

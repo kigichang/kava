@@ -20,6 +20,7 @@ public final class Property {
 	
 	private String tableName;
 	private String columnName;
+	private String column;
 	
 	private boolean expr;
 	
@@ -61,9 +62,11 @@ public final class Property {
 					Field field, Column column) throws UnsupportedTypeException, NoSuchMethodException, SecurityException {
 		
 		this(clazz, schema_name, table_name, field);
+		this.column = Convention.toColumn(column.name(), name);
+		
 		columnName = new StringBuilder(schema_name)
 						.append('.')
-						.append(Convention.toColumn(column.name(), name)).toString();
+						.append(this.column).toString();
 		
 		defaultValue = operator.parseValue(column.defaultValue());
 		nullAble = column.nullAble();
@@ -76,9 +79,11 @@ public final class Property {
 					Field field, Id id) throws UnsupportedTypeException, NoSuchMethodException, SecurityException {
 		
 		this(clazz, schema_name, table_name, field);
+		this.column = Convention.toColumn(id.name(), name);
+		
 		columnName = new StringBuilder(schema_name)
 						.append('.')
-						.append(Convention.toColumn(id.name(), name)).toString();
+						.append(this.column).toString();
 		
 		nullAble = false;
 		expr = false;
@@ -91,6 +96,7 @@ public final class Property {
 					Field field, Expression expression) 
 							throws UnsupportedTypeException, NoSuchMethodException, SecurityException {
 		
+		// TODO expression
 		this(clazz, schema_name, table_name, field);
 		nullAble = true;
 		expr = true;
@@ -128,6 +134,10 @@ public final class Property {
 
 	public String getColumnName() {
 		return columnName;
+	}
+	
+	public String getColumn() {
+		return column;
 	}
 
 	public boolean isExpr() {
