@@ -1,9 +1,6 @@
 package tw.kigi.kava.data;
 
 public class OrderValue {
-	public enum Sort {
-		DESC, ASC;
-	}
 	
 	private String property;
 	private Sort sort;
