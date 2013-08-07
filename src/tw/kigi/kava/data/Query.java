@@ -89,6 +89,11 @@ public abstract class Query<T> {
 		return this;
 	}
 	
+	public Query<T> excludeNull() {
+		includeNull = false;
+		return this;
+	}
+	
 	
 	protected String selectExpr() throws SQLException {
 		if (ArrayUtils.EMPTY_STRING_ARRAY.equals(fields)) {
