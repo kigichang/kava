@@ -51,10 +51,18 @@ public abstract class Query<T> {
 		return this;
 	}
 	
-	public Query<T> values(ParamValue<?>...values) {
-		this.values = values == null || values.length == 0
-						? EMPTY_PARAM_ARRAY
-						: values;
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public Query<T> values(Object...values) throws UnsupportedTypeException {
+		if (values == null || values.length == 0) {
+			this.values = EMPTY_PARAM_ARRAY;
+		}
+		else {
+			this.values = new ParamValue[values.length];
+			int i = 0;
+			for(Object val : values) {
+				this.values[i++] = new ParamValue(val);
+			}
+		}
 
 		return this;
 	}
@@ -281,7 +289,6 @@ public abstract class Query<T> {
 	}
 	
 	public int delete() throws SQLException {
-		// TODO delete
 		if (StringUtils.isBlank(condition) || EMPTY_PARAM_ARRAY.equals(values)) {
 			throw new SQLException("Delete without Condition is not permitted");
 		}
