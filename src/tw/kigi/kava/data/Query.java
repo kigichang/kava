@@ -1,6 +1,5 @@
 package tw.kigi.kava.data;
 
-import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -14,13 +13,12 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import tw.kigi.kava.data.exception.UnsupportedTypeException;
-import tw.kigi.kava.data.operator.OpUtils;
-import tw.kigi.kava.data.operator.Operator;
 
 public abstract class Query<T> {
 	
+	@SuppressWarnings("rawtypes")
 	public static final ParamValue[] EMPTY_PARAM_ARRAY 
-		= new ParamValue[] {};
+		= new ParamValue[] { };
 	
 	public static final OrderValue[] EMPTY_ORDER_ARRAY
 		= new OrderValue[] {};
@@ -33,8 +31,9 @@ public abstract class Query<T> {
 	private String sql;
 	
 	private boolean includeNull;
+	
 	private String condition;
-	private ParamValue[] values;
+	private ParamValue<?>[] values;
 	private String[] fields;
 	private String[] groups;
 	private OrderValue[] orders;
@@ -94,7 +93,6 @@ public abstract class Query<T> {
 		return this;
 	}
 	
-	
 	protected String selectExpr() throws SQLException {
 		if (ArrayUtils.EMPTY_STRING_ARRAY.equals(fields)) {
 			fields = schema.getFields();
@@ -112,6 +110,56 @@ public abstract class Query<T> {
 		ret.setCharAt(ret.length() - 1, ' ');
 		return ret.toString();
 		
+	}
+	
+	protected String updateExpr() throws SQLException {
+		if (ArrayUtils.EMPTY_STRING_ARRAY.equals(fields)
+				|| EMPTY_PARAM_ARRAY.equals(values)
+				|| StringUtils.EMPTY.equals(condition)) {
+			throw new SQLException("Update without Condition is not permitted");
+			
+		}
+			
+		
+		StringBuilder ret = new StringBuilder("update ")
+								.append(schema.getTableName())
+								.append(" set ");
+		
+		for (String field : fields) {
+			Property p = field.indexOf('.') < 0 
+					? schema.getProperty(schema.getSchemaName() + "." + field)
+					: schema.getProperty(field);
+					
+			ret.append(p.getColumn()).append(" = ?,");
+		}
+		
+		ret.setLength(ret.length() - 1);
+		return ret.toString();
+	}
+	
+	protected String insertExpr() throws SQLException {
+		if (ArrayUtils.EMPTY_STRING_ARRAY.equals(fields) || EMPTY_PARAM_ARRAY.equals(values)) {
+			throw new SQLException("Insert without Values is not permitted");
+		}
+		
+		if (fields.length != values.length) {
+			throw new SQLException("Length of Fiels and Values are not matched");
+		}
+		
+		StringBuilder ret = new StringBuilder("insert into ").append(schema.getTableName()).append(" (");
+		StringBuilder val = new StringBuilder(" values(");
+		
+		for (String field : fields) {
+			Property p = field.indexOf('.') < 0 
+							? schema.getProperty(schema.getSchemaName() + "." + field)
+							: schema.getProperty(field);
+
+			ret.append(p.getColumn()).append(",");
+			val.append("?,");
+		}
+		ret.replace(ret.length() - 1, ret.length(), ")");
+		val.replace(val.length() - 1, val.length(), ")");
+		return ret.append(val).toString();
 	}
 	
 	protected String fromExpr() {
@@ -178,7 +226,12 @@ public abstract class Query<T> {
 		
 		return stmt;
 	}
-	 
+	
+	/**
+	 * 
+	 * @return
+	 * @throws SQLException
+	 */
 	@SuppressWarnings({ "unchecked" }) 
 	public T[] find() throws SQLException {
 		StringBuilder sql = new StringBuilder();
@@ -230,11 +283,11 @@ public abstract class Query<T> {
 	public int delete() throws SQLException {
 		// TODO delete
 		if (StringUtils.isBlank(condition) || EMPTY_PARAM_ARRAY.equals(values)) {
-			throw new SQLException("Delte with no Condition is not permitted");
+			throw new SQLException("Delete without Condition is not permitted");
 		}
 		
 		StringBuilder sql = new StringBuilder("delete from ")
-								.append(schema.getTableName())
+								.append(schema.getTableName()).append(' ')
 								.append(whereExpr());
 		
 		
@@ -255,8 +308,13 @@ public abstract class Query<T> {
 	
 	
 	public int update() throws SQLException {
-		// TODO update
-		return 0;
+		StringBuilder sql = new StringBuilder(updateExpr()).append(' ')
+								.append(whereExpr());
+		
+		PreparedStatement stmt = prepared(sql.toString());
+		int ret = stmt.executeUpdate();
+		DBUtils.close(stmt);
+		return ret;
 	}
 	
 	public int update(T data) throws SQLException {
@@ -265,8 +323,11 @@ public abstract class Query<T> {
 	}
 	
 	public int insert() throws SQLException {
-		// TODO insert
-		return 0;
+		PreparedStatement stmt = prepared(insertExpr());
+		int ret = stmt.executeUpdate();
+		DBUtils.close(stmt);
+		
+		return ret;
 	}
 	
 	public int insert(T data) throws SQLException {
@@ -281,7 +342,7 @@ public abstract class Query<T> {
 	
 	public abstract T[] paginate(int start, int length) throws SQLException;
 	
-	public void clear() {
+	public Query<T> clear() {
 		sql = StringUtils.EMPTY;
 		includeNull = false;
 		condition = StringUtils.EMPTY;;
@@ -289,6 +350,20 @@ public abstract class Query<T> {
 		fields = ArrayUtils.EMPTY_STRING_ARRAY;
 		groups = ArrayUtils.EMPTY_STRING_ARRAY;
 		orders = EMPTY_ORDER_ARRAY;
+		return this;
+	}
+	
+	@SuppressWarnings("rawtypes")
+	public String preparedSQL() {
+		StringBuilder ret = new StringBuilder(sql);
+		ret.append("\n");
+		
+		for (ParamValue p : values) {
+			ret.append(p.getValueClass())
+			.append(":[").append(p.value).append("] ");
+		}
+		
+		return ret.toString();
 	}
 	
 	/*public void free() {

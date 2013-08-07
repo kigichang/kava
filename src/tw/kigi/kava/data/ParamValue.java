@@ -8,10 +8,14 @@ public class ParamValue<T> {
 	protected Operator<T> op;
 	protected T value;
 
-	@SuppressWarnings("unchecked")
 	public ParamValue(T value) throws UnsupportedTypeException {
 		
-		this.op = (Operator<T>) OpUtils.getOperator(value.getClass());
+		this.op = OpUtils.getOperator(getValueClass());
 		this.value = value;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public Class<T> getValueClass() {
+		return (Class<T>) value.getClass();
 	}
 }
