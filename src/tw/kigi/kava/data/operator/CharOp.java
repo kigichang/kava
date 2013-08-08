@@ -35,4 +35,9 @@ public class CharOp implements Operator<Character> {
 		return parseValue(result.getString(label));
 	}
 
+	@Override
+	public Class<Character> getOperand() {
+		return Character.class;
+	}
+
 }

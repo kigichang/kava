@@ -17,8 +17,8 @@ import tw.kigi.kava.data.exception.UnsupportedTypeException;
 public abstract class Query<T> {
 	
 	@SuppressWarnings("rawtypes")
-	public static final ParamValue[] EMPTY_PARAM_ARRAY 
-		= new ParamValue[] { };
+	public static final SQLParam[] EMPTY_PARAM_ARRAY 
+		= new SQLParam[] { };
 	
 	public static final OrderValue[] EMPTY_ORDER_ARRAY
 		= new OrderValue[] {};
@@ -33,7 +33,7 @@ public abstract class Query<T> {
 	private boolean includeNull;
 	
 	private String condition;
-	private ParamValue<?>[] values;
+	private SQLParam<?>[] values;
 	private String[] fields;
 	private String[] groups;
 	private OrderValue[] orders;
@@ -52,18 +52,11 @@ public abstract class Query<T> {
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public Query<T> values(Object...values) throws UnsupportedTypeException {
-		if (values == null || values.length == 0) {
-			this.values = EMPTY_PARAM_ARRAY;
-		}
-		else {
-			this.values = new ParamValue[values.length];
-			int i = 0;
-			for(Object val : values) {
-				this.values[i++] = new ParamValue(val);
-			}
-		}
-
+	public Query<T> values(SQLParam...values) throws UnsupportedTypeException {
+		this.values = values == null || values.length == 0 
+						? EMPTY_PARAM_ARRAY
+						: values;
+		
 		return this;
 	}
 	
@@ -228,7 +221,7 @@ public abstract class Query<T> {
 		PreparedStatement stmt = conn.prepareStatement(sql);
 		
 		int seq = 0;
-		for (ParamValue param: values) {
+		for (SQLParam param: values) {
 			param.op.setParam(stmt, ++seq, param.value);
 		}
 		
@@ -283,8 +276,13 @@ public abstract class Query<T> {
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public T[] findBy(String field, Object value) throws SQLException, UnsupportedTypeException {
+		
+		Property p = field.indexOf('.') < 0 
+				? schema.getProperty(schema.getSchemaName() + "." + field)
+				: schema.getProperty(field);
+		
 		this.condition = field + " = ?";
-		this.values = new ParamValue[] { new ParamValue(value) };
+		this.values = new SQLParam[] { new SQLParam(p.getType(), value) };
 		return find();
 	}
 	
@@ -308,8 +306,12 @@ public abstract class Query<T> {
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public int deleteBy(String field, Object value) throws SQLException, UnsupportedTypeException {
+		Property p = field.indexOf('.') < 0 
+				? schema.getProperty(schema.getSchemaName() + "." + field)
+				: schema.getProperty(field);
+				
 		this.condition = field + " = ?";
-		this.values = new ParamValue[] { new ParamValue(value) };
+		this.values = new SQLParam[] { new SQLParam(p.getType(), value) };
 		return delete();
 	}
 	
@@ -365,8 +367,8 @@ public abstract class Query<T> {
 		StringBuilder ret = new StringBuilder(sql);
 		ret.append("\n");
 		
-		for (ParamValue p : values) {
-			ret.append(p.getValueClass())
+		for (SQLParam p : values) {
+			ret.append(p.type)
 			.append(":[").append(p.value).append("] ");
 		}
 		

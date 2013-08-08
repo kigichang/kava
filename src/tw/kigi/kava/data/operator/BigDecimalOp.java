@@ -35,4 +35,9 @@ public class BigDecimalOp implements Operator<BigDecimal> {
 		return result.getBigDecimal(label);
 	}
 
+	@Override
+	public Class<BigDecimal> getOperand() {
+		return BigDecimal.class;
+	}
+
 }

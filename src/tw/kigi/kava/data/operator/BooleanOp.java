@@ -57,4 +57,9 @@ public class BooleanOp implements Operator<Boolean> {
 		return result.wasNull() ? null : ret;
 	}
 
+	@Override
+	public Class<Boolean> getOperand() {
+		return Boolean.class;
+	}
+
 }

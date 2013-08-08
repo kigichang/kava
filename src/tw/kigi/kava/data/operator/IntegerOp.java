@@ -56,4 +56,9 @@ public class IntegerOp implements Operator<Integer> {
 	  return result.wasNull() ? null : ret; 
 	}
 
+	@Override
+	public Class<Integer> getOperand() {
+		return Integer.class;
+	}
+
 }

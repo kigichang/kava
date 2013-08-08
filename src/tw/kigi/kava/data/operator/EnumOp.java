@@ -70,5 +70,10 @@ public class EnumOp<T, E extends Enum<?> & EnumType<T>> implements Operator<E> {
 		return toEnum(op.getResult(result, label));
 	}
 
+	@Override
+	public Class<E> getOperand() {
+		return this.clazz;
+	}
+
 
 }

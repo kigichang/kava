@@ -55,4 +55,9 @@ public class DoubleOp implements Operator<Double> {
 		return result.wasNull() ? null : ret;
 	}
 
+	@Override
+	public Class<Double> getOperand() {
+		return Double.class;
+	}
+
 }

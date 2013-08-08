@@ -68,4 +68,9 @@ public class DateTimeOp implements Operator<java.util.Date> {
 		return t != null ? toDate(t.getTime()) : null;
 	}
 
+	@Override
+	public Class<Date> getOperand() {
+		return java.util.Date.class;
+	}
+
 }

@@ -36,6 +36,8 @@ public final class Property {
 	private Method setter;
 	private Method getter;
 	
+	private Class<?> type;
+	
 	protected Property(Class<?> clazz, String schema_name, String table_name, 
 					   Field field) throws UnsupportedTypeException, NoSuchMethodException, SecurityException {
 		
@@ -51,11 +53,13 @@ public final class Property {
 						.append(tmp).toString();
 		
 		tableName = table_name;
-		operator = OpUtils.getOperator(field.getType());
 		
-		setter = clazz.getMethod("set" + tmp, field.getType());
+		type = field.getType();
+		operator = OpUtils.getOperator(type);
+		
+		setter = clazz.getMethod("set" + tmp, type);
 		getter = clazz.getMethod(
-					(Boolean.class.equals(field.getType()) ? "is" : "get") + tmp);
+					(Boolean.class.equals(type) ? "is" : "get") + tmp);
 	}
 	
 	public Property(Class<?> clazz, String schema_name, String table_name, 
@@ -166,5 +170,9 @@ public final class Property {
 
 	public Object getDefaultValue() {
 		return defaultValue;
+	}
+	
+	public Class<?> getType() {
+		return this.type;
 	}
 }

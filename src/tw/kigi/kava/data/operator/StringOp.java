@@ -26,4 +26,9 @@ public class StringOp implements Operator<String> {
 		return result.getString(label);
 	}
 
+	@Override
+	public Class<String> getOperand() {
+		return String.class;
+	}
+
 }

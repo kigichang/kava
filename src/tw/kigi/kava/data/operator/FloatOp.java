@@ -54,4 +54,9 @@ public class FloatOp implements Operator<Float> {
 		return result.wasNull() ? null : ret;
 	}
 
+	@Override
+	public Class<Float> getOperand() {
+		return Float.class;
+	}
+
 }

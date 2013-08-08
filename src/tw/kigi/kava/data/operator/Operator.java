@@ -14,4 +14,5 @@ public interface Operator<T> {
 	
 	T getResult(ResultSet result, String label) throws SQLException;
 	
+	Class<T> getOperand();
 }

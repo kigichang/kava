@@ -64,4 +64,9 @@ public class TimeOp implements Operator<java.sql.Time> {
 		return result.getTime(label);
 	}
 
+	@Override
+	public Class<Time> getOperand() {
+		return java.sql.Time.class;
+	}
+
 }

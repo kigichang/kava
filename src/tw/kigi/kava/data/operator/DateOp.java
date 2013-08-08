@@ -64,4 +64,9 @@ public class DateOp implements Operator<java.sql.Date> {
 		return result.getDate(label);
 	}
 
+	@Override
+	public Class<Date> getOperand() {
+		return java.sql.Date.class;
+	}
+
 }

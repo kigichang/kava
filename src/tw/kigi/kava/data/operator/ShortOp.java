@@ -56,4 +56,9 @@ public class ShortOp implements Operator<Short> {
 		
 	}
 
+	@Override
+	public Class<Short> getOperand() {
+		return Short.class;
+	}
+
 }

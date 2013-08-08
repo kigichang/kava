@@ -54,6 +54,11 @@ public class LongOp implements Operator<Long> {
 	  return result.wasNull() ? null : ret;
 	}
 
+	@Override
+	public Class<Long> getOperand() {
+		return Long.class;
+	}
+
 	
 
 }
