@@ -51,7 +51,7 @@ public abstract class Query<T> {
 		return this;
 	}
 	
-	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@SuppressWarnings("rawtypes")
 	public Query<T> values(SQLParam...values) throws UnsupportedTypeException {
 		this.values = values == null || values.length == 0 
 						? EMPTY_PARAM_ARRAY
@@ -326,7 +326,7 @@ public abstract class Query<T> {
 		return ret;
 	}
 	
-	public int update(T data) throws SQLException {
+	public int update(final T data) throws SQLException {
 		// TODO update
 		return 0;
 	}
@@ -339,7 +339,7 @@ public abstract class Query<T> {
 		return ret;
 	}
 	
-	public int insert(T data) throws SQLException {
+	public int insert(final T data) throws SQLException {
 		// TODO insert
 		return 0;
 	}

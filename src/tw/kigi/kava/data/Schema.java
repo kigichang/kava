@@ -157,4 +157,8 @@ public final class Schema {
 	public String[] getFields() {
 		return this.fields;
 	}
+	
+	public Property[] getProperties() {
+		return alias.values().toArray(new Property[alias.size()]);
+	}
 }
